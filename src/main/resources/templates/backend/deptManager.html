@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>backend</title>
+    <link rel="stylesheet" type="text/css" href="../bootstarp/css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../css/index.css" />
+    <link rel="stylesheet" type="text/css" href="/css/nmms.css" />
+    <script src="../js/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../bootstarp/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/userSetting.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/bootstrap-paginator.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        $(function () {
+            // 分页
+            let options = {
+                bootstrapMajorVersion: 3, // 指定bootstrap版本号,3之前不需要指定
+                currentPage: "[[${pageDepts.pageNum == 0 ? 1 : pageDepts.pageNum}]]", // 当前页
+                totalPages: "[[${pageDepts.pages == 0 ? 1 : pageDepts.pages}]]", // 总页数
+                size:"normal",
+                alignment: "center",
+                pageUrl:function(type,page,current){
+                    return "/dept/findAll?pageNo="+page;
+                }
+            };
+            $("#deptPage").bootstrapPaginator(options);
+
+            $("#addDept").click(function(){
+                let formData = new FormData($("#deptForm")[0]);
+                $.ajax({
+                    type:"post",
+                    url:"/dept/addDept",
+                    data:formData,
+                    dataType:"json",
+                    processData: false,
+                    contentType:false,
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/dept/findAll?pageNo=[[${pageDepts.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+            // 修改设置默认值
+            $("input[name='showAddZdept']").click(function(){
+                $.ajax({
+                    type:"post",
+                    url:"/dept/findById",
+                    data:{"deptId":$(this).attr("data-id")},
+                    dataType:"json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            $("#f-dept-id").val(result.returnObject.deptId);
+                            $("#f-dept-name").val(result.returnObject.deptName);
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+
+                        }
+                    }
+                });
+            });
+            $("#addZdept").click(function(){
+                let formData = new FormData($("#addZdeptForm")[0]);
+                $.ajax({
+                    type:"post",
+                    url:"/dept/addZdept",
+                    data:formData,
+                    dataType:"json",
+                    processData: false,
+                    contentType:false,
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/dept/findAll?pageNo=[[${pageDepts.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+
+            // 修改设置默认值
+            $("input[name='showDeptModify']").click(function(){
+                $.ajax({
+                    type:"post",
+                    url:"/dept/findById",
+                    data:{"deptId":$(this).attr("data-id")},
+                    dataType:"json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            $("#mofidy-dept-id").val(result.returnObject.deptId);
+                            $("#mofidy-dept-name").val(result.returnObject.deptName);
+                            $("#mofidy-dept-duty").val(result.returnObject.remark);
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+
+                        }
+                    }
+                });
+            });
+            // 修改
+            $("#modifyDeptBtn").click(function(){
+                let modifyForm = new FormData($("#modifyForm")[0]);
+                $.ajax({
+                    type:"post",
+                    url:"/dept/modifyDept",
+                    data:modifyForm,
+                    dataType:"json",
+                    processData: false,
+                    contentType:false,
+                    mimeType:"multipart/form-data",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/dept/findAll?pageNo=[[${pageDepts.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+
+                        }
+                    }
+                });
+            });
+
+            // 启用与禁用
+            $("input[name='modifyStatus']").click(function(){
+                $.ajax({
+                    type:"post",
+                    url:"/dept/modifyStatus",
+                    data:{"deptId":$(this).attr("data-id")},
+                    dataType:"json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/dept/findAll?pageNo=[[${pageDepts.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+
+<!-- 部门管理 -->
+<div class="panel panel-default" id="departmentSet">
+    <div class="panel-heading">
+        <h3 class="panel-title">部门管理 <span id="errorMsg"></span></span></h3>
+    </div>
+    <div class="panel-body">
+        <input type="button" value="添加部门" class="btn btn-primary" id="doAddDept">
+        <br>
+        <br>
+        <div class="modal fade" tabindex="-1" id="Dept">
+            <!-- 窗口声明 -->
+            <div class="modal-dialog modal-lg">
+                <!-- 内容声明 -->
+                <div class="modal-content">
+                    <!-- 头部、主体、脚注 -->
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">添加部门</h4>
+                    </div>
+                    <form id="deptForm">
+                        <div class="modal-body text-center">
+                            <div class="row text-right">
+                                <label for="dept-name" class="col-sm-4 control-label">部门名称：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="dept-name" name="deptName">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row text-right">
+                                <label for="dept-duty" class="col-sm-4 control-label">部门职能：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="dept-duty" name="remark">
+                                </div>
+                            </div>
+                            <br>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button id="addDept" class="btn btn-primary addDept">添加</button>
+                        <button class="btn btn-primary cancel" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加子部门模态框 -->
+        <div class="modal fade" tabindex="-1" id="sonDept">
+            <!-- 窗口声明 -->
+            <div class="modal-dialog modal-lg">
+                <!-- 内容声明 -->
+                <div class="modal-content">
+                    <!-- 头部、主体、脚注 -->
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">添加子部门</h4>
+                    </div>
+                    <form id="addZdeptForm">
+                        <div class="modal-body text-center">
+                            <div class="row text-right">
+                                <label for="dept-name" class="col-sm-4 control-label">父部门名称：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="f-dept-name" readonly="readonly">
+                                </div>
+                                <input type="hidden" id="f-dept-id" name="fDeptId" readonly="fdeptId">
+                            </div>
+                            <br>
+                            <div class="row text-right">
+                                <label for="dept-name" class="col-sm-4 control-label">部门名称：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="z-dept-name" name="zDeptName">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row text-right">
+                                <label for="dept-duty" class="col-sm-4 control-label">部门职能：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="z-dept-duty" name="zRemark">
+                                </div>
+                            </div>
+                            <br>
+                        </div>
+                    </form>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary addSonDept" id="addZdept">添加</button>
+                        <button class="btn btn-primary cancel" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 修改部门模态框 -->
+        <div class="modal fade" tabindex="-1" id="modifyDept">
+            <!-- 窗口声明 -->
+            <div class="modal-dialog modal-lg">
+                <!-- 内容声明 -->
+                <div class="modal-content">
+                    <!-- 头部、主体、脚注 -->
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">修改部门</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <form id="modifyForm">
+                            <div class="row text-right">
+                                <label for="dept-name" class="col-sm-4 control-label">id：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="mofidy-dept-id" name="deptId" readonly="readonly">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row text-right">
+                                <label for="dept-name" class="col-sm-4 control-label">部门名称：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="mofidy-dept-name" name="deptName">
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row text-right">
+                                <label for="dept-duty" class="col-sm-4 control-label">部门职能：</label>
+                                <div class="col-sm-4">
+                                    <input type="text" class="form-control" id="mofidy-dept-duty" name="remark">
+                                </div>
+                            </div>
+                        </form>
+                        <br>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary modifyDept" id="modifyDeptBtn">修改</button>
+                        <button class="btn btn-primary cancel" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="show-list">
+            <table class="table table-bordered table-hover" style='text-align: center;'>
+                <thead>
+                <tr class="text-danger">
+                    <th class="text-center">序号</th>
+                    <th class="text-center">部门编号</th>
+                    <th class="text-center">部门名称</th>
+                    <th class="text-center">部门职能</th>
+                    <th class="text-center">所属部门</th>
+                    <th class="text-center">部门状态</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="tb">
+                <tr th:each="dept,i:${pageDepts.list}">
+                    <td>[[${i.index+1}]]</td>
+                    <td>[[${dept.deptNo}]]</td>
+                    <td>[[${dept.deptName}]]</td>
+                    <td>[[${dept.remark}]]</td>
+<!--                    <td>[[${dept.fatherDeptId}]]</td>-->
+                    <td>
+                        <span th:if="${dept.dept == null}">--</span>
+                        <span th:if="${dept.dept != null}">[[${dept.dept.deptName}]]</span>
+                    </td>
+                    <td>
+                        <span th:if="${dept.isValid == 1}">启用</span>
+                        <span th:if="${dept.isValid == 0}">禁用</span>
+                    </td>
+                    <td class="text-center">
+                        <input type="button" class="btn btn-info btn-sm doAddSonDept" name="showAddZdept" th:data-id="${dept.deptId}" value="添加子部门">
+                        <input type="button" class="btn btn-warning btn-sm doModifyDept" name="showDeptModify" th:data-id="${dept.deptId}" value="修改">
+<!--                        <input type="button" class="btn btn-danger btn-sm doDisable" name="modifyStatus" th:data-id="${dept.deptId}" value="禁用">-->
+                        <span th:if="${dept.isValid == 1}">
+                                <input type="button" class="btn btn-danger btn-sm doDisable" name="modifyStatus" th:data-id="${dept.deptId}" value="禁用">
+                            </span>
+                        <span th:if="${dept.isValid == 0}">
+                                <input type="button" class="btn btn-success btn-sm doDisable" name="modifyStatus" th:data-id="${dept.deptId}" value="启用">
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <ul id="deptPage"></ul>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

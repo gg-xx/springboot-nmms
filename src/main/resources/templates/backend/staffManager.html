@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<!--suppress ALL-->
+<html xmlns:th="https://www.thymeleaf.org/">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>backend</title>
+    <link rel="stylesheet" type="text/css" href="/bootstarp/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/index.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/nmms.css"/>
+    <script src="/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/bootstarp/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/userSetting.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/bootstrap-paginator.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        $(function () {
+            $("#seach-deptId").val("[[${staffParameter?.deptId}]]");
+            $("#seach-role").val("[[${staffParameter?.role}]]");
+            $("#seach-isValid").val("[[${staffParameter?.isValid}]]");
+            // 分页
+            let options = {
+                bootstrapMajorVersion: 3, //指定bootstrap版本
+                currentPage: "[[${pageStaffs?.pageNum == 0 ? 1 : pageStaffs?.pageNum}]]",
+                totalPages: "[[${pageStaffs?.pages == 0 ? 1 : pageStaffs?.pages}]]",
+                size: "normal",
+                alignment: "center",
+                // 带参数查询分页
+                onPageClicked: function (event, originalEvent, type, page) {
+                    $("#pageNo").val(page);
+                    $("#searchForm").submit();
+                }
+            }
+            // 使用bootstrap分页插件实现前台分页效果
+            $("#staffPage").bootstrapPaginator(options);
+
+            // 添加员工
+            $("#addStaff").click(function () {
+                $.ajax({
+                    type: "post",
+                    url: "/staff/addStaff",
+                    data: {
+                        "staffName": $("#marger-staffName").val(),
+                        "loginName": $("#marger-loginName").val(),
+                        "password": $("#marger-password").val(),
+                        "phone": $("#marger-phone").val(),
+                        "email": $("#marger-email").val(),
+                        "role": $("#role").val(),
+                        "deptId": $("#deptId").val()
+                    },
+                    dataType: "json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/staff/findByParams?pageNo=[[${pageStaffs?.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+
+            // 修改设置默认值
+            $("input[name='showModify']").click(function(){
+                $.ajax({
+                    type: "post",
+                    url: "/staff/findById",
+                    data: {"id":$(this).attr("data-id")},
+                    dataType: "json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            $("#MargerStaffId").val(result.returnObject.staffId);
+                            $("#MargerStaffname").val(result.returnObject.staffName);
+                            $("#MargerLoginName").val(result.returnObject.loginName);
+                            $("#MargerPhone").val(result.returnObject.phone);
+                            $("#MargerEmail").val(result.returnObject.email);
+                            $("#MargerRole").val(result.returnObject.role);
+                            if(result.returnObject.deptId != null){
+                                $("#MargerDept").val(result.returnObject.deptId);
+                            }
+                            console.log("deptId:"+result.returnObject.deptId);
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+
+
+            // 修改员工信息
+            $("#modifyStaff").click(function(){
+                $.ajax({
+                    type: "post",
+                    url: "/staff/modifyStaff",
+                    data: {
+                        "staffId":$("#MargerStaffId").val(),
+                        "staffName":$("#MargerStaffname").val(),
+                        "loginName":$("#MargerLoginName").val(),
+                        "phone":$("#MargerPhone").val(),
+                        "email":$("#MargerEmail").val(),
+                        "role":$("#MargerRole").val(),
+                        "deptId":$("#MargerDept").val()
+                    },
+                    dataType: "json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/staff/findByParams?pageNo=[[${pageStaffs?.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+
+            // 启用与禁用
+            $("input[name='modifyStatus']").click(function(){
+                $.ajax({
+                    type: "post",
+                    url: "/staff/modifyStatus",
+                    data: {"id":$(this).attr("data-id")},
+                    dataType: "json",
+                    success:function(result){
+                        if (result.responseCode == "2001") {
+                            location.href = "/staff/findByParams?pageNo=[[${pageStaffs?.pageNum}]]";
+                        } else {
+                            $("#errorMsg").tooltip({
+                                title: "error",
+                                placement: "center",
+                                template: "<div class='tooltip errorMsg'>" + result.message + "</div>",
+                                tigger: "manual"
+                            }).tooltip("show");
+                        }
+                    }
+                });
+            });
+
+
+        });
+    </script>
+</head>
+
+<body>
+<!-- 管理员管理 -->
+<div class="panel panel-default" id="adminSet">
+    <div class="panel-heading">
+        <h3 class="panel-title">管理员管理&nbsp;&nbsp;&nbsp;<span id="errorMsg"></span></h3>
+    </div>
+    <div class="panel-body">
+        <div class="showmargersearch">
+            <form id="searchForm" style="margin-left: 20px" action="/staff/findByParams" method="post" class="form-inline">
+                <div class="form-group">
+                    <label for="exampleInputName2">姓名:</label>
+                    <input type="hidden" id="pageNo" name="pageNo">
+                    <input type="text" class="form-control" id="staffName" name="staffName" th:value="${staffParameter.staffName}" placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputName2">帐号:</label>
+                    <input type="text" class="form-control" id="loginName" name="loginName" th:value="${staffParameter.loginName}" placeholder="请输入帐号">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputName2">电话:</label>
+                    <input type="text" class="form-control" id="phone" name="phone" th:value="${staffParameter.phone}" placeholder="请输入电话">
+                </div>
+                <br/>
+                <div class="form-group">
+                    <label for="exampleInputEmail3">邮箱:</label>
+                    <input type="text" class="form-control" id="email" name="email" th:value="${staffParameter.email}" placeholder="请输入邮箱">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputName2">部门</label>
+                    <select class="form-control" id="seach-deptId" name="deptId">
+                        <option value="-1">全部</option>
+                        <option th:each="dept:${depts}" th:value="${dept.deptId}">[[${dept.deptName}]]</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputName2">角色</label>
+                    <select class="form-control" id="seach-role" name="role">
+                        <option value="-1">全部</option>
+                        <option value="1001">系统管理员</option>
+                        <option value="1002">普通管理员</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputName2">状态</label>
+                    <select class="form-control" id="seach-isValid" name="isValid">
+                        <option value="-1">全部</option>
+                        <option value="1">---有效---</option>
+                        <option value="0">---无效---</option>
+                    </select>
+                </div>
+                <input type="submit" value="查询" class="btn btn-primary" id="doSearch">
+            </form>
+        </div>
+        <br>
+        <br>
+        <input type="button" value="添加管理员" class="btn btn-primary" id="doAddManger">
+        <!-- 添加管理员 -->
+        <div class="modal fade" tabindex="-1" id="myMangerUser">
+            <!-- 窗口声明 -->
+            <div class="modal-dialog modal-lg">
+                <!-- 内容声明 -->
+                <div class="modal-content">
+                    <!-- 头部、主体、脚注 -->
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">添加管理员</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="row text-right">
+                            <label for="marger-username" class="col-sm-4 control-label">员工姓名：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="marger-staffName">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="marger-loginName" class="col-sm-4 control-label">登录帐号：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="marger-loginName">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="marger-password" class="col-sm-4 control-label">登录密码：</label>
+                            <div class="col-sm-4">
+                                <input type="password" class="form-control" id="marger-password">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="marger-phone" class="col-sm-4 control-label">联系电话：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="marger-phone">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="marger-adrees" class="col-sm-4 control-label">邮箱地址：</label>
+                            <div class="col-sm-4">
+                                <input type="email" class="form-control" id="marger-email">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="role" class="col-sm-4 control-label">角&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;色：</label>
+                            <div class=" col-sm-4">
+                                <select class="form-control" id="role">
+                                    <option value="-1">请选择</option>
+                                    <option value="1001">系统管理员</option>
+                                    <option value="1002">普通管理员</option>
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="role" class="col-sm-4 control-label">部&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;门：</label>
+                            <div class=" col-sm-4">
+                                <select class="form-control" id="deptId">
+                                    <option value="-1">请选择</option>
+                                    <option th:each="dept:${depts}" th:value="${dept.deptId}">[[${dept.deptName}]]
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <br/>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary add-Manger" id="addStaff">添加</button>
+                        <button class="btn btn-primary cancel" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 管理员修改 -->
+        <div class="modal fade" tabindex="-1" id="myModal-Manger">
+            <!-- 窗口声明 -->
+            <div class="modal-dialog modal-lg">
+                <!-- 内容声明 -->
+                <div class="modal-content">
+                    <!-- 头部、主体、脚注 -->
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">管理员修改</h4>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="row text-right">
+                            <label for="MargerUsername" class="col-sm-4 control-label">id：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="MargerStaffId" readonly="readonly">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="MargerUsername" class="col-sm-4 control-label">管理员姓名：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="MargerStaffname">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="MargerLoginName" class="col-sm-4 control-label">登录帐号：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="MargerLoginName" readonly="readonly">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="MargerPhone" class="col-sm-4 control-label">联系电话：</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="MargerPhone">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="MargerAdrees" class="col-sm-4 control-label">邮箱地址：</label>
+                            <div class="col-sm-4">
+                                <input type="email" class="form-control" id="MargerEmail">
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="MargerRole" class="col-sm-4 control-label">角&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;色：</label>
+                            <div class=" col-sm-4">
+                                <select class="form-control" id="MargerRole">
+                                    <option value="-1">请选择</option>
+                                    <option value="1001">系统管理员</option>
+                                    <option value="1002">普通管理员</option>
+                                </select>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row text-right">
+                            <label for="role" class="col-sm-4 control-label">部&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;门：</label>
+                            <div class=" col-sm-4">
+                                <select class="form-control" id="MargerDept">
+                                    <option value="-1">请选择</option>
+                                    <option th:each="dept:${depts}" th:value="${dept.deptId}">[[${dept.deptName}]]
+                                </select>
+                            </div>
+                        </div>
+                        <br/>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-warning doMargerModal" id="modifyStaff">修改</button>
+                        <button class="btn btn-primary cancel" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="show-list" style="position: relative; top: 10px;">
+            <table class="table table-bordered table-hover" style='text-align: center;'>
+                <thead>
+                <tr class="text-danger">
+                    <th class="text-center">序号</th>
+                    <th class="text-center">姓名</th>
+                    <th class="text-center">帐号</th>
+                    <th class="text-center">电话</th>
+                    <th class="text-center">邮箱</th>
+                    <th class="text-center">部门</th>
+                    <th class="text-center">状态</th>
+                    <th class="text-center">角色</th>
+                    <th class="text-center">操作</th>
+                </tr>
+                </thead>
+                <tbody id="tb">
+                <tr th:each="staff,i:${pageStaffs.list}">
+                    <td>[[${i.index+1}]]</td>
+                    <td>[[${staff.staffName}]]</td>
+                    <td>[[${staff.loginName}]]</td>
+                    <td>[[${staff.phone}]]</td>
+                    <td>[[${staff.email}]]</td>
+                    <td>
+                        <span th:if="${staff.dept != null}">[[${staff.dept.deptName}]]</span>
+                        <span th:if="${staff.dept == null}">--</span>
+                    </td>
+                    <td>
+                        <span th:if="${staff.isValid == 1}">有效</span>
+                        <span th:if="${staff.isValid == 0}">无效</span>
+                    </td>
+                    <td>
+                        <span th:if="${staff.role == '1001'}">系统管理员</span>
+                        <span th:if="${staff.role == '1002'}">普通管理员</span>
+                    </td>
+                    <td class="text-center">
+                        <input type="button" class="btn btn-warning btn-sm doMangerModify" th:data-id="${staff.staffId}" name="showModify" value="修改">
+                        <span th:if="${staff.isValid == 1}">
+                            <input type="button" class="btn btn-danger btn-sm doMangerDisable" th:data-id="${staff.staffId}" name="modifyStatus" value="禁用">
+                        </span>
+                        <span th:if="${staff.isValid == 0}">
+                            <input type="button" class="btn btn-success btn-sm doMangerDisable" th:data-id="${staff.staffId}" name="modifyStatus" value="启用">
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            <ul id="staffPage"></ul>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

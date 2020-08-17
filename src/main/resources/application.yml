@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/nmms?characterEncoding=utf-8&serverTimezone=UTC
+    username: root
+    password: itcast
+#    配置静态资源可访问，，默认如下，修改后覆盖默认
+#  mvc:
+#    static-path-pattern: /**
+#  resources:
+#    static-locations: classpath:/static/,classpath:/templates/,classpath:/static/,classpath:/META-INF/resources/,classpath:/public/
+
+mybatis:
+  type-aliases-package: com.itany.ssm.entity
+  mapper-locations: classpath:mapper/*.xml
+
+#pagehelper分页插件配置
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  page-size-zero: false
